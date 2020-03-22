@@ -7,6 +7,7 @@ import './App.css';
 import Scroll from '../components/Scroll.js';
 import ErrorBoundary from '../components/ErrorBoundary.js';
 
+
 class App extends Component {
     constructor() {
         super()
