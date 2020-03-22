@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 // import Card from './Card.js';
 // import CardList from './CardList.js';
-import App from './App.js';
+import App from './containers/App.js';
 import * as serviceWorker from './serviceWorker';
 import 'tachyons';
 // import { robots } from './robots';
