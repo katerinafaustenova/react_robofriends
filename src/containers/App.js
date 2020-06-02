@@ -1,52 +1,57 @@
-import React, {Component} from 'react';
-import Searchbox from '../components/Searchbox.js';
-import CardList from '../components/CardList.js';
-// import { robots } from './robots';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { setSearchField, requestRobots } from '../actions';
+
+import CardList from '../components/CardList';
+import SearchBox from '../components/SearchBox';
+import Scroll from '../components/Scroll';
+import ErrorBoundry from '../components/ErrorBoundry';
+
 import './App.css';
-// import { render } from '@testing-library/react';
-import Scroll from '../components/Scroll.js';
-import ErrorBoundary from '../components/ErrorBoundary.js';
+
+// parameter state comes from index.js provider store state(rootReducers)
+const mapStateToProps = (state) => {
+  return {
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending
+  }
+}
+
+// dispatch the DOM changes to call an action. note mapStateToProps returns object, mapDispatchToProps returns function
+// the function returns an object then uses connect to change the data from redecers.
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestRobots: () => dispatch(requestRobots())
+  }
+}
 
 class App extends Component {
-    constructor() {
-        super()
-        this.state = {
-            robots: [],
-            searchfield: ''
-        }
-    }
+  componentDidMount() {
+    this.props.onRequestRobots();
+  }
 
-    componentDidMount() {
-        fetch('https://jsonplaceholder.typicode.com/users')
-        .then(response => response.json())
-        .then(users => this.setState({robots: users}));
-    }
+  render() {
+    const { robots, searchField, onSearchChange, isPending } = this.props;
+    const filteredRobots = robots.filter(robot => {
+      return robot.name.toLowerCase().includes(searchField.toLowerCase());
+    })
+    return (
+      <div className='tc'>
+        <h1 className='f1'>RoboFriends</h1>
+        <SearchBox searchChange={onSearchChange}/>
+        <Scroll>
+          { isPending ? <h1>Loading</h1> :
+            <ErrorBoundry>
+              <CardList robots={filteredRobots} />
+            </ErrorBoundry>
+          }
+        </Scroll>
+      </div>
+    );
+  }
+}
 
-    onSearchChange = (event) => {
-        this.setState({searchfield: event.target.value})
-    }
-
-    render() {
-        const {robots, searchfield} = this.state;
-        const filteredRobots = robots.filter(robot =>{
-            return robot.name.toLowerCase().includes(searchfield.toLowerCase())
-        })
-        if (robots.length === 0) {
-            return <h1>Loading</h1>
-        } else {
-            return (
-            <div className='tc'>
-                <h1 className='f2'>RoboFriends</h1>
-                <Searchbox searchChange={this.onSearchChange}/>
-                <Scroll>
-                    <ErrorBoundary>
-                        <CardList robots={filteredRobots}/>
-                    </ErrorBoundary>
-                </Scroll>
-            </div>
-            );
-        }
-    }
-}        
-
-export default App;
+// action done from mapDispatchToProps will channge state from mapStateToProps
+export default connect(mapStateToProps, mapDispatchToProps)(App)
